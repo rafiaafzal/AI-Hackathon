@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface PaperTopBarProps {
-  editionId: string;
+  editionId?: string;
 }
 
-export default function PaperTopBar({ editionId }: PaperTopBarProps) {
+export default function PaperTopBar({}: PaperTopBarProps = {}) {
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -34,9 +33,9 @@ export default function PaperTopBar({ editionId }: PaperTopBarProps) {
   };
 
   return (
-    <nav
-      aria-label="Newspaper navigation"
-      className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D9CFBF] pb-4 pt-2 font-ui text-xs"
+    <div
+      aria-label="Newspaper bar"
+      className="flex items-center justify-between border-b border-[#D9CFBF] pb-4 pt-2 font-ui text-xs"
     >
       <div className="flex items-center gap-2">
         <span className="font-semibold uppercase tracking-wider text-[#8A5A2B]">
@@ -44,33 +43,7 @@ export default function PaperTopBar({ editionId }: PaperTopBarProps) {
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <a
-          href={`/api/edition/${editionId}/pdf`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-1.5 font-medium text-[#1B1A17] hover:border-[#9B1C1C] hover:text-[#9B1C1C] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-1 transition"
-          aria-label="Download PDF edition"
-        >
-          <span>Download PDF</span>
-        </a>
-
-        <Link
-          href="/archive"
-          className="inline-flex items-center gap-1.5 rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-1.5 font-medium text-[#1B1A17] hover:border-[#9B1C1C] hover:text-[#9B1C1C] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-1 transition"
-          aria-label="View past editions in archive"
-        >
-          <span>Archive</span>
-        </Link>
-
-        <Link
-          href="/profile"
-          className="inline-flex items-center gap-1.5 rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-1.5 font-medium text-[#1B1A17] hover:border-[#9B1C1C] hover:text-[#9B1C1C] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-1 transition"
-          aria-label="View reader profile"
-        >
-          <span>Profile</span>
-        </Link>
-
+      <div className="flex items-center gap-2">
         <Button
           type="button"
           onClick={handleRefresh}
@@ -81,6 +54,6 @@ export default function PaperTopBar({ editionId }: PaperTopBarProps) {
           {isRefreshing ? "Brewing Fresh Paper..." : "Refresh my paper"}
         </Button>
       </div>
-    </nav>
+    </div>
   );
 }

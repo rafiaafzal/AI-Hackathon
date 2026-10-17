@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -92,18 +91,12 @@ async function ProfileContent() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-8 py-8 space-y-8">
-      {/* Top Navigation */}
-      <nav aria-label="Profile navigation" className="flex items-center justify-between border-b border-[#D9CFBF] pb-4">
-        <Link
-          href="/paper"
-          className="inline-flex items-center gap-1.5 font-ui text-xs font-medium text-[#1B1A17] hover:text-[#9B1C1C] transition"
-        >
-          &larr; Back to Morning Paper
-        </Link>
+      {/* Profile Header Bar */}
+      <div className="flex items-center justify-end border-b border-[#D9CFBF] pb-4">
         <span className="font-ui text-xs uppercase tracking-widest text-[#8A5A2B] font-semibold">
           Reader Profile
         </span>
-      </nav>
+      </div>
 
       {/* Header */}
       <header className="space-y-2">

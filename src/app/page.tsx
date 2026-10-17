@@ -15,7 +15,7 @@ async function LandingAction() {
     return (
       <Link
         href="/paper"
-        className="font-ui inline-flex items-center justify-center rounded-sm bg-[var(--cn-accent,#9B1C1C)] px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition hover:bg-[#801616] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-2"
+        className="font-ui inline-flex items-center justify-center rounded-sm bg-[var(--cn-accent,#9B1C1C)] px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition hover:bg-[#801616] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-2 shadow-sm"
       >
         Open today&apos;s paper &rarr;
       </Link>
@@ -23,12 +23,20 @@ async function LandingAction() {
   }
 
   return (
-    <Link
-      href="/onboarding"
-      className="font-ui inline-flex items-center justify-center rounded-sm bg-[var(--cn-accent,#9B1C1C)] px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition hover:bg-[#801616] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-2"
-    >
-      Brew my paper &rarr;
-    </Link>
+    <div className="flex flex-wrap items-center justify-center gap-4">
+      <Link
+        href="/onboarding"
+        className="font-ui inline-flex items-center justify-center rounded-sm bg-[var(--cn-accent,#9B1C1C)] px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition hover:bg-[#801616] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-2 shadow-sm"
+      >
+        Brew my paper &rarr;
+      </Link>
+      <Link
+        href="/signin"
+        className="font-ui inline-flex items-center justify-center rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] px-8 py-3.5 text-sm font-semibold tracking-wide text-[#1B1A17] transition hover:border-[#9B1C1C] hover:text-[#9B1C1C] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-2 shadow-sm"
+      >
+        Sign in
+      </Link>
+    </div>
   );
 }
 
@@ -53,12 +61,20 @@ export default function Home() {
           <div className="pt-4">
             <Suspense
               fallback={
-                <Link
-                  href="/onboarding"
-                  className="font-ui inline-flex items-center justify-center rounded-sm bg-[var(--cn-accent,#9B1C1C)] px-8 py-3.5 text-sm font-semibold tracking-wide text-white"
-                >
-                  Brew my paper &rarr;
-                </Link>
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <Link
+                    href="/onboarding"
+                    className="font-ui inline-flex items-center justify-center rounded-sm bg-[var(--cn-accent,#9B1C1C)] px-8 py-3.5 text-sm font-semibold tracking-wide text-white"
+                  >
+                    Brew my paper &rarr;
+                  </Link>
+                  <Link
+                    href="/signin"
+                    className="font-ui inline-flex items-center justify-center rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] px-8 py-3.5 text-sm font-semibold tracking-wide text-[#1B1A17]"
+                  >
+                    Sign in
+                  </Link>
+                </div>
               }
             >
               <LandingAction />

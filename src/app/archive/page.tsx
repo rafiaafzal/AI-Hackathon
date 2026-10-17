@@ -39,14 +39,8 @@ async function ArchiveContent() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-8 py-8 space-y-8">
-      {/* Top action link */}
-      <div className="flex items-center justify-between border-b border-[#D9CFBF] pb-3 text-xs font-ui">
-        <Link
-          href="/paper"
-          className="text-[#9B1C1C] font-semibold hover:underline flex items-center gap-1"
-        >
-          &larr; Return to Today&apos;s Paper
-        </Link>
+      {/* Archive meta header */}
+      <div className="flex items-center justify-end border-b border-[#D9CFBF] pb-3 text-xs font-ui">
         <span className="text-[#6B655C]">
           {editions.length} {editions.length === 1 ? "Edition" : "Editions"} in Archive
         </span>
