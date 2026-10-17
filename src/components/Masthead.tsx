@@ -3,10 +3,11 @@ import Rule from "./Rule";
 
 interface MastheadProps {
   name?: string;
+  editionNumber?: number;
   className?: string;
 }
 
-export default function Masthead({ name, className = "" }: MastheadProps) {
+export default function Masthead({ name, editionNumber, className = "" }: MastheadProps) {
   return (
     <header className={`w-full text-center pt-8 pb-4 ${className}`}>
       <h1 className="font-headline text-5xl sm:text-7xl font-bold tracking-tight text-[var(--cn-ink,#1B1A17)]">
@@ -17,9 +18,16 @@ export default function Masthead({ name, className = "" }: MastheadProps) {
         <div className="min-w-[120px] text-left">
           <TodayDate />
         </div>
-        <span className="font-headline italic normal-case text-sm tracking-normal text-[var(--cn-chai,#8A5A2B)]">
-          Your morning paper, brewed fresh.
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="font-headline italic normal-case text-sm tracking-normal text-[var(--cn-chai,#8A5A2B)]">
+            Your morning paper, brewed fresh.
+          </span>
+          {typeof editionNumber === "number" && (
+            <span className="rounded bg-[#FAF0E6] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A2B] border border-[#D9CFBF]">
+              Edition No. {editionNumber}
+            </span>
+          )}
+        </div>
         <div className="min-w-[120px] text-right font-medium">
           {name ? <span>Prepared for {name}</span> : <span>Daily Edition</span>}
         </div>
