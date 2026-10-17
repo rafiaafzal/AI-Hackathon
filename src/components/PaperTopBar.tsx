@@ -63,6 +63,14 @@ export default function PaperTopBar({ editionId }: PaperTopBarProps) {
           <span>Archive</span>
         </Link>
 
+        <Link
+          href="/profile"
+          className="inline-flex items-center gap-1.5 rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-1.5 font-medium text-[#1B1A17] hover:border-[#9B1C1C] hover:text-[#9B1C1C] focus:outline-none focus:ring-2 focus:ring-[#9B1C1C] focus:ring-offset-1 transition"
+          aria-label="View reader profile"
+        >
+          <span>Profile</span>
+        </Link>
+
         <Button
           type="button"
           onClick={handleRefresh}
