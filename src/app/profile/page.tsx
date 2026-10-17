@@ -117,7 +117,7 @@ async function ProfileContent() {
       <Rule double />
 
       {/* Profile Summary & Key Attributes */}
-      <section className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-6 sm:p-8 space-y-5">
+      <section className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#8A5A2B] bg-[#FFFDF8] p-6 sm:p-8 space-y-5">
         <SectionLabel>Editorial Assessment</SectionLabel>
         {profile?.summary ? (
           <blockquote className="font-body text-lg sm:text-xl italic text-[#1B1A17] border-l-4 border-[#9B1C1C] pl-4 py-1 leading-relaxed">
@@ -186,7 +186,7 @@ async function ProfileContent() {
       )}
 
       {/* Topic Weights Horizontal Bar List */}
-      <section className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-6 sm:p-8 space-y-4">
+      <section className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#9B1C1C] bg-[#FFFDF8] p-6 sm:p-8 space-y-4">
         <div className="border-b border-[#D9CFBF] pb-2 flex justify-between items-end">
           <div>
             <SectionLabel>Topic Affinity Matrix</SectionLabel>
@@ -230,7 +230,7 @@ async function ProfileContent() {
       <section className="space-y-4">
         <SectionLabel>Reader Engagement Signals</SectionLabel>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-4 text-center space-y-1">
+          <div className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#2E7D4F] bg-[#FFFDF8] p-4 text-center space-y-1">
             <span className="font-ui text-[10px] uppercase font-semibold text-[#6B655C] tracking-wider block">
               Stories Liked
             </span>
@@ -239,7 +239,7 @@ async function ProfileContent() {
             </span>
           </div>
 
-          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-4 text-center space-y-1">
+          <div className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#8A3B3B] bg-[#FFFDF8] p-4 text-center space-y-1">
             <span className="font-ui text-[10px] uppercase font-semibold text-[#6B655C] tracking-wider block">
               Stories Skipped
             </span>
@@ -248,7 +248,7 @@ async function ProfileContent() {
             </span>
           </div>
 
-          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-4 text-center space-y-1">
+          <div className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#2F5D8A] bg-[#FFFDF8] p-4 text-center space-y-1">
             <span className="font-ui text-[10px] uppercase font-semibold text-[#6B655C] tracking-wider block">
               Articles Read / Clicked
             </span>
@@ -257,7 +257,7 @@ async function ProfileContent() {
             </span>
           </div>
 
-          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-4 text-center space-y-1">
+          <div className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#9B1C1C] bg-[#FFFDF8] p-4 text-center space-y-1">
             <span className="font-ui text-[10px] uppercase font-semibold text-[#6B655C] tracking-wider block">
               PDF Downloads
             </span>
@@ -269,7 +269,7 @@ async function ProfileContent() {
 
         {/* Recently Liked & Skipped Topics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-5 space-y-3">
+          <div className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-emerald-600 bg-[#FFFDF8] p-5 space-y-3">
             <span className="font-ui text-xs font-semibold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-600" />
               Recently Liked Topics
@@ -292,7 +292,7 @@ async function ProfileContent() {
             )}
           </div>
 
-          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-5 space-y-3">
+          <div className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-amber-600 bg-[#FFFDF8] p-5 space-y-3">
             <span className="font-ui text-xs font-semibold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-amber-600" />
               Recently Skipped Topics

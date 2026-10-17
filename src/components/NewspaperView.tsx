@@ -191,7 +191,7 @@ export default function NewspaperView({
         {edition.changes && edition.changes.length > 0 && (
           <aside
             aria-label="What changed since yesterday"
-            className="rounded-sm border-l-4 border-[#8A5A2B] bg-[#FFFDF8] p-4 sm:p-5 shadow-xs"
+            className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#8A5A2B] bg-[#8A5A2B]/10 p-5 shadow-xs"
           >
             <div className="flex items-center gap-2 mb-2">
               <span className="font-ui text-xs font-bold uppercase tracking-wider text-[#8A5A2B]">
@@ -312,7 +312,7 @@ export default function NewspaperView({
 
         {/* Three things you learned today */}
         {filteredEdition.takeaways && filteredEdition.takeaways.length > 0 && (
-          <section className="rounded-sm border-2 border-[#1B1A17] bg-[#FFFDF8] p-6 sm:p-8 space-y-4 my-8">
+          <section className="rounded-sm border border-[#D9CFBF] border-l-4 border-l-[#9B1C1C] bg-[#9B1C1C]/5 p-6 sm:p-8 space-y-4 my-8">
             <div className="flex items-center gap-2">
               <SectionLabel>Daily Digest</SectionLabel>
               <span className="font-ui text-xs font-semibold uppercase tracking-wider text-[#8A5A2B]">
