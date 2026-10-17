@@ -1,29 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Playfair_Display, Source_Serif_4, Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const headline = Playfair_Display({ subsets: ["latin"], variable: "--font-headline" });
+const body = Source_Serif_4({ subsets: ["latin"], variable: "--font-body" });
+const ui = Inter({ subsets: ["latin"], variable: "--font-ui" });
 
 export const metadata: Metadata = {
   title: "Chai & News",
   description: "Your morning paper, brewed fresh.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${headline.variable} ${body.variable} ${ui.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
