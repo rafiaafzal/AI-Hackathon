@@ -15,7 +15,7 @@ export default function SwitchReaderButton() {
       router.push("/onboarding");
       router.refresh();
     } catch {
-      window.location.href = "/onboarding";
+      router.push("/onboarding");
     } finally {
       setLoading(false);
     }
