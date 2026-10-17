@@ -1,5 +1,5 @@
-// NOTE: This page is for development and debugging purposes only.
 import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export const instant = false;
@@ -15,6 +15,10 @@ interface ArticleRow {
 }
 
 async function ArticlesContent() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   // Query total count
   const { count: totalCount, error: countError } = await supabaseAdmin
     .from('articles')
