@@ -3,7 +3,6 @@ import { getCurrentUser } from "@/lib/session";
 import { generateEdition } from "@/lib/edition/generate";
 
 export const maxDuration = 60;
-export const dynamic = "force-dynamic";
 
 export async function POST() {
   try {

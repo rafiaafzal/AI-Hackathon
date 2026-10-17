@@ -32,6 +32,9 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
     return data as SessionUser;
   } catch (err: unknown) {
+    if (err && typeof err === "object" && "digest" in err) {
+      throw err;
+    }
     console.error("[getCurrentUser] Error fetching current user session:", err);
     return null;
   }

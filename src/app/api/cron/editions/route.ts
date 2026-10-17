@@ -3,7 +3,6 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { generateEdition } from "@/lib/edition/generate";
 
 export const maxDuration = 60;
-export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;

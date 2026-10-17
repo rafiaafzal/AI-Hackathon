@@ -75,7 +75,13 @@ export default function StoryCard({
               timerRef.current = setTimeout(() => {
                 if (!readSentRef.current) {
                   readSentRef.current = true;
-                  sendSignal("read_time", 3);
+                  const payload = JSON.stringify({ articleId, type: "read_time", value: 3 });
+                  fetch("/api/signals", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: payload,
+                    keepalive: true,
+                  }).catch(() => {});
                 }
               }, 3000);
             }
@@ -175,7 +181,8 @@ export default function StoryCard({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <SectionLabel>Lead Story &bull; Front Page</SectionLabel>
           <span className="font-ui text-xs text-[#8A5A2B] font-medium">
-            {source || "Chai & News"} &bull; {readMinutes} min read
+            {source || "Chai & News"}
+            {publishedAt ? ` • ${new Date(publishedAt).toLocaleDateString()}` : ""} &bull; {readMinutes} min read
           </span>
         </div>
 

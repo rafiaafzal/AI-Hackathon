@@ -5,7 +5,6 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { UserProfile } from "@/lib/profile";
 
 export const maxDuration = 60;
-export const dynamic = "force-dynamic";
 
 const SignalSchema = z.object({
   articleId: z.string().min(1, "articleId is required"),
