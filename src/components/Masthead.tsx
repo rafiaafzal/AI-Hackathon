@@ -4,10 +4,16 @@ import Rule from "./Rule";
 interface MastheadProps {
   name?: string;
   editionNumber?: number;
+  layoutStyle?: "brief" | "balanced" | "deep";
   className?: string;
 }
 
-export default function Masthead({ name, editionNumber, className = "" }: MastheadProps) {
+export default function Masthead({
+  name,
+  editionNumber,
+  layoutStyle,
+  className = "",
+}: MastheadProps) {
   return (
     <header className={`w-full text-center pt-8 pb-4 ${className}`}>
       <h1 className="font-headline text-5xl sm:text-7xl font-bold tracking-tight text-[var(--cn-ink,#1B1A17)]">
@@ -18,13 +24,23 @@ export default function Masthead({ name, editionNumber, className = "" }: Masthe
         <div className="min-w-[120px] text-left">
           <TodayDate />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 justify-center">
           <span className="font-headline italic normal-case text-sm tracking-normal text-[var(--cn-chai,#8A5A2B)]">
             Your morning paper, brewed fresh.
           </span>
           {typeof editionNumber === "number" && (
             <span className="rounded bg-[#FAF0E6] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A2B] border border-[#D9CFBF]">
               Edition No. {editionNumber}
+            </span>
+          )}
+          {layoutStyle === "brief" && (
+            <span className="rounded bg-[#FAF5EC] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A2B] border border-[#8A5A2B]/40 uppercase tracking-wider">
+              Brief edition
+            </span>
+          )}
+          {layoutStyle === "deep" && (
+            <span className="rounded bg-[#FAF5EC] px-2 py-0.5 text-[10px] font-semibold text-[#2F5D8A] border border-[#2F5D8A]/40 uppercase tracking-wider">
+              Deep read edition
             </span>
           )}
         </div>

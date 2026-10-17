@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import SectionLabel from "@/components/SectionLabel";
+import { toOneSentence } from "@/lib/utils";
 
 export interface StoryCardProps {
   articleId: string;
@@ -17,6 +18,7 @@ export interface StoryCardProps {
   whyNew?: string;
   variant?: "lead" | "section" | "inBrief" | "discovery";
   interactive?: boolean;
+  layoutStyle?: "brief" | "balanced" | "deep";
 }
 
 export default function StoryCard({
@@ -33,11 +35,13 @@ export default function StoryCard({
   whyNew,
   variant = "section",
   interactive = true,
+  layoutStyle,
 }: StoryCardProps) {
   const [hidden, setHidden] = useState<boolean>(false);
   const [liked, setLiked] = useState<boolean>(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const readSentRef = useRef<boolean>(false);
+  const displaySummary = layoutStyle === "brief" ? toOneSentence(summary) : summary;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Send signals helper
@@ -213,9 +217,9 @@ export default function StoryCard({
           </p>
         )}
 
-        {summary && (
+        {displaySummary && (
           <p className="font-body text-base sm:text-lg text-[#3A3834] leading-relaxed max-w-4xl">
-            {summary}
+            {displaySummary}
           </p>
         )}
 
@@ -270,8 +274,8 @@ export default function StoryCard({
               {title}
             </a>
           </h4>
-          {summary && (
-            <p className="font-body text-xs text-[#3A3834] line-clamp-2">{summary}</p>
+          {displaySummary && (
+            <p className="font-body text-xs text-[#3A3834] line-clamp-2">{displaySummary}</p>
           )}
         </div>
 
@@ -327,9 +331,9 @@ export default function StoryCard({
           </div>
         )}
 
-        {summary && (
+        {displaySummary && (
           <p className="font-body text-base text-[#3A3834] leading-relaxed">
-            {summary}
+            {displaySummary}
           </p>
         )}
 
@@ -378,15 +382,15 @@ export default function StoryCard({
           </a>
         </h3>
 
-        {reason && (
+        {reason && layoutStyle === "deep" && (
           <p className="font-ui text-[11px] italic text-[#8A5A2B]">
             Why this story: <span className="font-medium text-[#3A3834]">{reason}</span>
           </p>
         )}
 
-        {summary && (
+        {displaySummary && (
           <p className="font-body text-sm text-[#3A3834] leading-relaxed line-clamp-4">
-            {summary}
+            {displaySummary}
           </p>
         )}
       </div>

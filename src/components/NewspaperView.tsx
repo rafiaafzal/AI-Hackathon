@@ -171,7 +171,11 @@ export default function NewspaperView({
       />
 
       {/* Masthead */}
-      <Masthead name={edition.readerName} editionNumber={edition.editionNumber} />
+      <Masthead
+        name={edition.readerName}
+        editionNumber={edition.editionNumber}
+        layoutStyle={filteredEdition.layoutStyle}
+      />
 
       {/* Theme line */}
       {edition.theme && (
@@ -220,6 +224,7 @@ export default function NewspaperView({
             readMinutes={edition.lead.readMinutes}
             blurb={edition.lead.blurb}
             interactive={interactive}
+            layoutStyle={filteredEdition.layoutStyle}
           />
         )}
 
@@ -248,6 +253,7 @@ export default function NewspaperView({
                   reason={item.reason}
                   readMinutes={item.readMinutes}
                   interactive={interactive}
+                  layoutStyle={filteredEdition.layoutStyle}
                 />
               ))}
             </div>
@@ -278,6 +284,7 @@ export default function NewspaperView({
                   reason={item.reason}
                   readMinutes={item.readMinutes}
                   interactive={interactive}
+                  layoutStyle={filteredEdition.layoutStyle}
                 />
               ))}
             </div>
@@ -340,6 +347,7 @@ export default function NewspaperView({
             readMinutes={filteredEdition.discovery.readMinutes}
             whyNew={filteredEdition.discovery.whyNew}
             interactive={interactive}
+            layoutStyle={filteredEdition.layoutStyle}
           />
         )}
 

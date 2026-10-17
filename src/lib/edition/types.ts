@@ -28,4 +28,5 @@ export interface Edition {
   takeaways: string[];
   discovery?: EditionItem & { whyNew: string };
   changes?: string[];
+  layoutStyle?: "brief" | "balanced" | "deep";
 }

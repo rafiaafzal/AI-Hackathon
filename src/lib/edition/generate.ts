@@ -6,6 +6,7 @@ import { generateJSON } from "@/lib/ai";
 import { withRetry } from "@/lib/retry";
 import { UserProfile } from "@/lib/profile";
 import { Edition, EditionItem, EditionSection } from "@/lib/edition/types";
+import { toOneSentence } from "@/lib/utils";
 
 interface DBUserRow {
   id: string;
@@ -235,19 +236,41 @@ function formatReason(rawReason?: string, isRomanUrdu = false, defaultTopic = "y
   return `Because you ${rawReason.charAt(0).toLowerCase() + rawReason.slice(1)}`;
 }
 
+function getAverageTopicDepth(profile: UserProfile | null): number {
+  if (!profile) return 0.5;
+  const rawDepth = profile.topic_depth;
+  if (typeof rawDepth === "number" && !isNaN(rawDepth)) {
+    return Math.max(0, Math.min(1, rawDepth));
+  }
+  if (rawDepth && typeof rawDepth === "object") {
+    const values = Object.values(rawDepth).filter((v) => typeof v === "number" && !isNaN(v));
+    if (values.length > 0) {
+      const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+      return Math.max(0, Math.min(1, avg));
+    }
+  }
+  if (typeof (profile as { depth?: unknown }).depth === "number") {
+    const d = (profile as { depth: number }).depth;
+    if (!isNaN(d)) return Math.max(0, Math.min(1, d));
+  }
+  return 0.5;
+}
+
 function toEditionItem(
   article: CandidateArticle,
   reason: string,
-  isRomanUrdu: boolean
+  isRomanUrdu: boolean,
+  isBrief = false
 ): EditionItem {
-  const words = article.summary ? article.summary.trim().split(/\s+/).length : 50;
+  const summaryText = isBrief ? toOneSentence(article.summary) : article.summary;
+  const words = summaryText ? summaryText.trim().split(/\s+/).length : 50;
   return {
     articleId: article.id,
     url: article.url,
     title: article.title,
     source: article.source,
     publishedAt: article.published_at,
-    summary: article.summary,
+    summary: summaryText,
     topics: Array.isArray(article.topics) ? article.topics : [],
     reason: formatReason(reason, isRomanUrdu, article.topics?.[0] || "your selected topics"),
     readMinutes: Math.max(1, Math.round(words / 45)),
@@ -269,6 +292,14 @@ export async function generateEdition(userId: string): Promise<Edition> {
   const user = userRow as DBUserRow;
   const profile = user.profile_json as UserProfile | null;
   const isRomanUrdu = profile?.language === "roman_urdu";
+  const avgDepth = getAverageTopicDepth(profile);
+  let layoutStyle: "brief" | "balanced" | "deep" = "balanced";
+  if (avgDepth < 0.35) {
+    layoutStyle = "brief";
+  } else if (avgDepth > 0.65) {
+    layoutStyle = "deep";
+  }
+  const isBrief = layoutStyle === "brief";
 
   // Call match_articles RPC (query_embedding: interest_vector, match_count: 60, since_hours: 96)
   let rawArticles: DBArticleRow[] = [];
@@ -475,6 +506,16 @@ export async function generateEdition(userId: string): Promise<Edition> {
   if (candidatesPool.length > 0) {
     try {
       const systemPrompt = getEditorSystemPrompt();
+      let depthHint =
+        "Standard balanced edition: 2 to 4 stories per section, 4 to 6 inBrief stories, 2-3 sentence lead blurb.";
+      if (layoutStyle === "brief") {
+        depthHint =
+          "HEADLINE READER (depth < 0.35): Include up to 5 stories per section and up to 10 stories in inBrief. Keep all summaries to exactly 1 crisp sentence.";
+      } else if (layoutStyle === "deep") {
+        depthHint =
+          "DEEP READ READER (depth > 0.65): Focus on depth with exactly 2 stories per section. Write a comprehensive 4-sentence lead blurb analyzing the story's implications.";
+      }
+
       const editorInput = {
         reader: {
           name: user.name || "Reader",
@@ -483,6 +524,7 @@ export async function generateEdition(userId: string): Promise<Edition> {
           avoid: profile?.avoid || [],
           expertise: profile?.expertise || "intermediate",
           language: profile?.language || "english",
+          depthHint,
         },
         candidates: candidatesPool.map((c) => ({
           id: c.id,
@@ -531,7 +573,7 @@ export async function generateEdition(userId: string): Promise<Edition> {
       const art = candidateMap.get(editorOutput.lead.id)!;
       usedIds.add(art.id);
       lead = {
-        ...toEditionItem(art, editorOutput.lead.reason, isRomanUrdu),
+        ...toEditionItem(art, editorOutput.lead.reason, isRomanUrdu, isBrief),
         blurb: editorOutput.lead.blurb,
       };
     }
@@ -544,20 +586,23 @@ export async function generateEdition(userId: string): Promise<Edition> {
         if (candidateMap.has(item.id) && !usedIds.has(item.id)) {
           usedIds.add(item.id);
           const art = candidateMap.get(item.id)!;
-          validItems.push(toEditionItem(art, item.reason, isRomanUrdu));
+          validItems.push(toEditionItem(art, item.reason, isRomanUrdu, isBrief));
         }
       }
-      if (validItems.length > 0) {
+      const maxSectionItems = layoutStyle === "deep" ? 2 : (layoutStyle === "brief" ? 5 : 4);
+      const trimmedItems = validItems.slice(0, maxSectionItems);
+      if (trimmedItems.length > 0) {
         sections.push({
           key: `section_${sIdx + 1}`,
           label: sec.label,
-          items: validItems,
+          items: trimmedItems,
         });
       }
     }
 
     // Map inBrief
-    for (const id of editorOutput.inBrief) {
+    const maxInBrief = layoutStyle === "deep" ? 3 : (layoutStyle === "brief" ? 10 : 6);
+    for (const id of editorOutput.inBrief.slice(0, maxInBrief)) {
       if (candidateMap.has(id) && !usedIds.has(id)) {
         usedIds.add(id);
         const art = candidateMap.get(id)!;
@@ -565,7 +610,8 @@ export async function generateEdition(userId: string): Promise<Edition> {
           toEditionItem(
             art,
             isRomanUrdu ? "Because aap tez khulaasa chahte hain." : "Because you wanted a quick morning brief.",
-            isRomanUrdu
+            isRomanUrdu,
+            isBrief
           )
         );
       }
@@ -582,7 +628,8 @@ export async function generateEdition(userId: string): Promise<Edition> {
         ...toEditionItem(
           art,
           isRomanUrdu ? "Because yeh nayi disha aapke daira-e-ilm ko barhati hai." : "Because expanding your horizons reveals fresh perspectives.",
-          isRomanUrdu
+          isRomanUrdu,
+          isBrief
         ),
         whyNew: editorOutput.discovery.whyNew,
       };
@@ -597,7 +644,8 @@ export async function generateEdition(userId: string): Promise<Edition> {
       ...toEditionItem(
         topStory,
         isRomanUrdu ? "Because yeh aaj ki sab se ahem khabar hai." : "Because this is today's top recommended story.",
-        isRomanUrdu
+        isRomanUrdu,
+        isBrief
       ),
       blurb: topStory.summary || topStory.title,
     };
@@ -605,36 +653,50 @@ export async function generateEdition(userId: string): Promise<Edition> {
 
   if (sections.length === 0) {
     const fallbackItems: EditionItem[] = [];
+    const maxFallback = layoutStyle === "deep" ? 2 : (layoutStyle === "brief" ? 15 : 8);
     for (const art of candidatesPool) {
-      if (!usedIds.has(art.id) && fallbackItems.length < 8) {
+      if (!usedIds.has(art.id) && fallbackItems.length < maxFallback) {
         usedIds.add(art.id);
         fallbackItems.push(
           toEditionItem(
             art,
             isRomanUrdu ? "Because yeh aapke intikhab kardah mauzoat se mutabiqat rakhti hai." : "Because this directly matches your reading profile.",
-            isRomanUrdu
+            isRomanUrdu,
+            isBrief
           )
         );
       }
     }
     if (fallbackItems.length > 0) {
-      sections.push({
-        key: "top_for_you",
-        label: isRomanUrdu ? "Aap Ke Liye Khas" : "Top for you",
-        items: fallbackItems,
-      });
+      if (layoutStyle === "brief" && fallbackItems.length > 5) {
+        for (let i = 0; i < fallbackItems.length; i += 5) {
+          sections.push({
+            key: `top_for_you_${Math.floor(i / 5) + 1}`,
+            label: isRomanUrdu ? `Aap Ke Liye Khas ${Math.floor(i / 5) + 1}` : `Top Stories ${Math.floor(i / 5) + 1}`,
+            items: fallbackItems.slice(i, i + 5),
+          });
+        }
+      } else {
+        sections.push({
+          key: "top_for_you",
+          label: isRomanUrdu ? "Aap Ke Liye Khas" : "Top for you",
+          items: fallbackItems,
+        });
+      }
     }
   }
 
   if (inBrief.length === 0) {
+    const maxInBriefFallback = layoutStyle === "deep" ? 3 : (layoutStyle === "brief" ? 10 : 6);
     for (const art of candidatesPool) {
-      if (!usedIds.has(art.id) && inBrief.length < 6) {
+      if (!usedIds.has(art.id) && inBrief.length < maxInBriefFallback) {
         usedIds.add(art.id);
         inBrief.push(
           toEditionItem(
             art,
             isRomanUrdu ? "Because mukhtasar waqt mein ahem khabrein." : "Because you need a rapid headline scan.",
-            isRomanUrdu
+            isRomanUrdu,
+            isBrief
           )
         );
       }
@@ -754,6 +816,7 @@ export async function generateEdition(userId: string): Promise<Edition> {
     takeaways,
     discovery,
     changes: changes.length > 0 ? changes : undefined,
+    layoutStyle,
   };
 
   const { data: savedEdition, error: upsertError } = await supabaseAdmin

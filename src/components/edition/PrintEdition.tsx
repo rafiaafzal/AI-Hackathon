@@ -3,6 +3,7 @@
 import React from "react";
 import QRCode from "qrcode";
 import { Edition, EditionSection } from "@/lib/edition/types";
+import { toOneSentence } from "@/lib/utils";
 
 interface PrintEditionProps {
   edition: Edition;
@@ -544,6 +545,8 @@ export default async function PrintEdition({ edition }: PrintEditionProps) {
               <span>{formattedDate}</span>
               <span className="masthead-tagline">
                 Your morning paper, brewed fresh. &bull; Edition No. {edition.editionNumber}
+                {edition.layoutStyle === "brief" && " • Brief edition"}
+                {edition.layoutStyle === "deep" && " • Deep read edition"}
               </span>
               <span>Prepared for {readerName}</span>
             </div>
@@ -589,7 +592,11 @@ export default async function PrintEdition({ edition }: PrintEditionProps) {
                 )}
 
                 {edition.lead.summary && (
-                  <p className="story-summary">{edition.lead.summary}</p>
+                  <p className="story-summary">
+                    {edition.layoutStyle === "brief"
+                      ? toOneSentence(edition.lead.summary)
+                      : edition.lead.summary}
+                  </p>
                 )}
               </div>
 
@@ -661,11 +668,15 @@ export default async function PrintEdition({ edition }: PrintEditionProps) {
                         </div>
                         <h4 className="secondary-headline">{story.title}</h4>
                         {story.summary && (
-                          <p className="story-summary">{story.summary}</p>
+                          <p className="story-summary">
+                            {edition.layoutStyle === "brief"
+                              ? toOneSentence(story.summary)
+                              : story.summary}
+                          </p>
                         )}
                       </div>
                       <div>
-                        {story.reason && (
+                        {story.reason && edition.layoutStyle === "deep" && (
                           <div className="story-reason">
                             Why: {story.reason}
                           </div>
@@ -720,10 +731,12 @@ export default async function PrintEdition({ edition }: PrintEditionProps) {
                       <h4 className="story-headline">{story.title}</h4>
                       {story.summary && (
                         <p className={`story-summary ${isFirst ? "drop-cap" : ""}`}>
-                          {story.summary}
+                          {edition.layoutStyle === "brief"
+                            ? toOneSentence(story.summary)
+                            : story.summary}
                         </p>
                       )}
-                      {story.reason && (
+                      {story.reason && edition.layoutStyle === "deep" && (
                         <div className="story-reason">Why: {story.reason}</div>
                       )}
                       {qr && (
