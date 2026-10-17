@@ -1,5 +1,8 @@
 // NOTE: This page is for development and debugging purposes only.
+import { Suspense } from 'react';
 import { supabaseAdmin } from '@/lib/supabase';
+
+export const instant = false;
 
 interface ArticleRow {
   id: string;
@@ -11,7 +14,7 @@ interface ArticleRow {
   published_at: string | null;
 }
 
-export default async function DebugArticlesPage() {
+async function ArticlesContent() {
   // Query total count
   const { count: totalCount, error: countError } = await supabaseAdmin
     .from('articles')
@@ -163,5 +166,19 @@ export default async function DebugArticlesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DebugArticlesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-50 p-12 text-center text-zinc-500 dark:bg-zinc-950 dark:text-zinc-400">
+          Loading articles debug page...
+        </div>
+      }
+    >
+      <ArticlesContent />
+    </Suspense>
   );
 }
