@@ -8,6 +8,7 @@ export const maxDuration = 60;
 
 const OnboardingBodySchema = z.object({
   name: z.string().min(1, "Name is required").trim(),
+  email: z.string().trim().toLowerCase().email("Please enter a valid email address"),
   topics: z.array(z.string()).min(3, "Select at least 3 topics"),
   topicDepth: z.record(z.string(), z.number()).default({}),
   about: z.string().max(600).optional().default(""),
@@ -31,8 +32,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, topics, topicDepth, about, language, region, deliveryTime } =
+    const { name, email, topics, topicDepth, about, language, region, deliveryTime } =
       parsed.data;
+
+    // Check if a user with this email already exists
+    const { data: existingUser } = await supabaseAdmin
+      .from("users")
+      .select("id")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (existingUser) {
+      return NextResponse.json(
+        { ok: false, error: "This email already has a paper. Please sign in." },
+        { status: 409 }
+      );
+    }
 
     // 1. Build structured profile using Gemini
     const profile = await buildProfile({
@@ -62,6 +77,7 @@ export async function POST(request: NextRequest) {
       .from("users")
       .insert({
         name: profile.name,
+        email,
         profile_json: profile,
         interest_vector: pgvectorString,
       })
@@ -69,6 +85,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error || !data) {
+      if (error?.code === "23505" || error?.message?.includes("duplicate key")) {
+        return NextResponse.json(
+          { ok: false, error: "This email already has a paper. Please sign in." },
+          { status: 409 }
+        );
+      }
       console.error("[onboarding] Supabase user insertion error:", error);
       return NextResponse.json(
         { ok: false, error: error?.message || "Failed to create user record" },

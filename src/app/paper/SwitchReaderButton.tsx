@@ -12,10 +12,10 @@ export default function SwitchReaderButton() {
     setLoading(true);
     try {
       await fetch("/api/logout", { method: "POST" });
-      router.push("/onboarding");
+      router.push("/");
       router.refresh();
     } catch {
-      router.push("/onboarding");
+      router.push("/");
     } finally {
       setLoading(false);
     }
@@ -28,7 +28,7 @@ export default function SwitchReaderButton() {
       disabled={loading}
       className="border-[#D9CFBF] text-[#6B655C] hover:bg-[#FAF0E6] hover:text-[#9B1C1C] text-xs font-ui uppercase tracking-wider h-9"
     >
-      {loading ? "Switching..." : "Switch Reader"}
+      {loading ? "Signing out..." : "Sign out"}
     </Button>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TOPICS, Topic } from "@/lib/feeds";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export default function OnboardingWizard() {
 
   // Form State
   const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [selectedTopics, setSelectedTopics] = useState<Topic[]>([]);
   const [topicDepth, setTopicDepth] = useState<Record<string, number>>({});
   const [about, setAbout] = useState<string>("");
@@ -90,6 +92,7 @@ export default function OnboardingWizard() {
     try {
       const payload = {
         name: name.trim(),
+        email: email.trim().toLowerCase(),
         topics: selectedTopics,
         topicDepth,
         about: about.trim(),
@@ -177,7 +180,7 @@ export default function OnboardingWizard() {
 
       {/* Main Card */}
       <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-6 shadow-sm sm:p-10 cn-fade">
-        {/* Step 1: Name */}
+        {/* Step 1: Name & Email */}
         {step === 1 && (
           <div className="space-y-6">
             <div className="space-y-2">
@@ -188,28 +191,53 @@ export default function OnboardingWizard() {
                 What should we call you?
               </h2>
               <p className="font-body text-sm text-[#6B655C]">
-                We will print your name on the masthead of your morning edition.
+                We will print your name on the masthead and use your email to retrieve your paper.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="name-input" className="sr-only">
-                Your Name
-              </label>
-              <Input
-                id="name-input"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Tariq, Ayesha, Omar"
-                className="h-12 border-[#D9CFBF] bg-[#FAF5EC] text-base focus-visible:ring-[#9B1C1C]"
-                autoFocus
-              />
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label htmlFor="name-input" className="block font-ui text-xs font-semibold uppercase tracking-wider text-[#6B655C]">
+                  Your Name
+                </label>
+                <Input
+                  id="name-input"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Tariq, Ayesha, Omar"
+                  className="h-12 border-[#D9CFBF] bg-[#FAF5EC] text-base focus-visible:ring-[#9B1C1C]"
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="email-input" className="block font-ui text-xs font-semibold uppercase tracking-wider text-[#6B655C]">
+                  Your Email
+                </label>
+                <Input
+                  id="email-input"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. ayesha@example.com"
+                  className="h-12 border-[#D9CFBF] bg-[#FAF5EC] text-base focus-visible:ring-[#9B1C1C]"
+                />
+                <p className="font-ui text-[11px] text-[#8A5A2B]">
+                  No passwords. Your email is your key to your daily paper.
+                </p>
+              </div>
             </div>
 
-            <div className="pt-4 flex justify-end">
+            <div className="pt-4 flex items-center justify-between">
+              <Link
+                href="/signin"
+                className="font-ui text-xs text-[#8A5A2B] hover:text-[#9B1C1C] hover:underline"
+              >
+                Already have a paper? Sign in
+              </Link>
               <Button
-                disabled={name.trim().length === 0}
+                disabled={name.trim().length === 0 || !email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())}
                 onClick={() => setStep(2)}
                 className="bg-[#9B1C1C] text-white hover:bg-[#801616] px-6 h-11"
               >
@@ -500,8 +528,18 @@ export default function OnboardingWizard() {
             </div>
 
             {submitError && (
-              <div className="rounded border border-red-200 bg-red-50 p-3 text-xs text-red-700">
-                {submitError}
+              <div className="rounded border border-red-200 bg-red-50 p-3 text-xs text-red-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span>{submitError}</span>
+                {submitError.includes("sign in") || submitError.includes("Sign in") ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.push("/signin")}
+                    className="border-red-300 text-red-800 hover:bg-red-100 text-xs h-7 px-2 shrink-0"
+                  >
+                    Go to Sign In &rarr;
+                  </Button>
+                ) : null}
               </div>
             )}
 
