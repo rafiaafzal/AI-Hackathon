@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  serverExternalPackages: ["puppeteer", "puppeteer-core", "@sparticuz/chromium"],
   turbopack: {
     rules: {
       "*.css": {
