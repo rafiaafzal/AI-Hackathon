@@ -33,7 +33,154 @@ interface CandidateArticle extends DBArticleRow {
 interface SignalJoinedArticle {
   article_id: string;
   type: string;
+  created_at?: string;
   articles: { topics: string[] | null } | { topics: string[] | null }[] | null;
+}
+
+interface SignalWithTopics {
+  type: string;
+  topics: string[];
+  createdAt?: string;
+}
+
+function countEditionTopics(edition: Partial<Edition> | null): Record<string, number> {
+  if (!edition) return {};
+  const counts: Record<string, number> = {};
+  const addTopics = (topics?: string[] | null) => {
+    if (!topics) return;
+    for (const t of topics) {
+      const key = t.toLowerCase().trim();
+      if (key) {
+        counts[key] = (counts[key] || 0) + 1;
+      }
+    }
+  };
+
+  if (edition.lead?.topics) addTopics(edition.lead.topics);
+  for (const sec of edition.sections || []) {
+    for (const item of sec.items || []) {
+      addTopics(item.topics);
+    }
+  }
+  for (const item of edition.inBrief || []) {
+    addTopics(item.topics);
+  }
+  if (edition.discovery?.topics) addTopics(edition.discovery.topics);
+
+  return counts;
+}
+
+function formatTopicName(topic: string): string {
+  const t = topic.toLowerCase().trim();
+  if (t === "ai") return "AI";
+  return t;
+}
+
+function computeChangesSinceYesterday(
+  current: {
+    lead: EditionItem | null;
+    sections: EditionSection[];
+    inBrief: EditionItem[];
+    discovery?: EditionItem;
+  },
+  previous: Edition | null,
+  recentSignals: SignalWithTopics[]
+): string[] {
+  const changes: string[] = [];
+  const currCounts = countEditionTopics({
+    lead: current.lead as EditionItem & { blurb: string },
+    sections: current.sections,
+    inBrief: current.inBrief,
+    discovery: current.discovery as (EditionItem & { whyNew: string }) | undefined,
+  });
+  const prevCounts = countEditionTopics(previous);
+
+  // Group signals by topic and action
+  const skipsByTopic: Record<string, number> = {};
+  const likesByTopic: Record<string, number> = {};
+  const dislikesByTopic: Record<string, number> = {};
+
+  for (const sig of recentSignals) {
+    for (const t of sig.topics) {
+      const key = t.toLowerCase().trim();
+      if (!key) continue;
+      if (sig.type === "skip") skipsByTopic[key] = (skipsByTopic[key] || 0) + 1;
+      if (sig.type === "like") likesByTopic[key] = (likesByTopic[key] || 0) + 1;
+      if (sig.type === "dislike") dislikesByTopic[key] = (dislikesByTopic[key] || 0) + 1;
+    }
+  }
+
+  // 1. Skips
+  for (const [topic, skipCount] of Object.entries(skipsByTopic)) {
+    if (changes.length >= 4) break;
+    const topicLabel = formatTopicName(topic);
+    const currCount = currCounts[topic] || 0;
+    const prevCount = prevCounts[topic] || 0;
+
+    if (currCount === 0) {
+      changes.push(
+        `You skipped ${skipCount} ${topicLabel} ${skipCount === 1 ? "story" : "stories"}, so ${topicLabel} was excluded today.`
+      );
+    } else if (prevCount > 0 && currCount < prevCount) {
+      changes.push(
+        `You skipped ${skipCount} ${topicLabel} ${skipCount === 1 ? "story" : "stories"}, so ${topicLabel} is down to ${currCount} ${currCount === 1 ? "story" : "stories"} today.`
+      );
+    } else {
+      changes.push(
+        `You skipped ${skipCount} ${topicLabel} ${skipCount === 1 ? "story" : "stories"}, so ${topicLabel} is down to ${currCount} ${currCount === 1 ? "story" : "stories"} today.`
+      );
+    }
+  }
+
+  // 2. Dislikes
+  for (const [topic, dislikeCount] of Object.entries(dislikesByTopic)) {
+    if (changes.length >= 4) break;
+    if (skipsByTopic[topic]) continue;
+    const topicLabel = formatTopicName(topic);
+    changes.push(
+      `You disliked ${dislikeCount} ${topicLabel} ${dislikeCount === 1 ? "story" : "stories"}, removing them from today's paper.`
+    );
+  }
+
+  // 3. Likes
+  for (const [topic, likeCount] of Object.entries(likesByTopic)) {
+    if (changes.length >= 4) break;
+    const topicLabel = formatTopicName(topic);
+    const currCount = currCounts[topic] || 0;
+    const prevCount = prevCounts[topic] || 0;
+    const diff = currCount - prevCount;
+
+    if (diff > 0) {
+      changes.push(
+        `You liked ${topicLabel} stories, so ${topicLabel} got ${diff} extra ${diff === 1 ? "story" : "stories"}.`
+      );
+    } else {
+      changes.push(
+        `You liked ${likeCount} ${topicLabel} ${likeCount === 1 ? "story" : "stories"}, prioritizing it today.`
+      );
+    }
+  }
+
+  // 4. Discovery story
+  if (current.discovery && changes.length < 4) {
+    changes.push("New today: a story from outside your usual topics.");
+  }
+
+  // 5. Topic shifts if previous edition exists and room left
+  if (previous && changes.length < 4) {
+    for (const [topic, currCount] of Object.entries(currCounts)) {
+      if (changes.length >= 4) break;
+      const prevCount = prevCounts[topic] || 0;
+      if (prevCount === 0 && currCount > 0 && !likesByTopic[topic]) {
+        const topicLabel = formatTopicName(topic);
+        changes.push(
+          `Added ${currCount} ${topicLabel} ${currCount === 1 ? "story" : "stories"} based on your reading trends.`
+        );
+      }
+    }
+  }
+
+  return changes.slice(0, 4);
 }
 
 const EditorOutputSchema = z.object({
@@ -156,18 +303,19 @@ export async function generateEdition(userId: string): Promise<Edition> {
   // 2. Load feedback from `signals` joined with articles(topics)
   const excludedArticleIds = new Set<string>();
   const topicBoost: Record<string, number> = {};
+  const userSignalsWithTopics: SignalWithTopics[] = [];
 
   try {
     const { data: signalsData, error: signalsError } = await supabaseAdmin
       .from("signals")
-      .select("article_id, type, articles(topics)")
+      .select("article_id, type, created_at, articles(topics)")
       .eq("user_id", userId);
 
     if (signalsError) {
       console.warn("[generateEdition] Joined signals query failed, falling back:", signalsError.message);
       const { data: rawSignals } = await supabaseAdmin
         .from("signals")
-        .select("article_id, type")
+        .select("article_id, type, created_at")
         .eq("user_id", userId);
 
       if (rawSignals && rawSignals.length > 0) {
@@ -187,6 +335,13 @@ export async function generateEdition(userId: string): Promise<Edition> {
         for (const sig of rawSignals) {
           const sType = sig.type as string;
           const artId = sig.article_id as string;
+          const topics = topicsMap.get(artId) || [];
+          userSignalsWithTopics.push({
+            type: sType,
+            topics,
+            createdAt: sig.created_at as string | undefined,
+          });
+
           if (sType === "skip" || sType === "dislike") {
             excludedArticleIds.add(artId);
           }
@@ -196,7 +351,6 @@ export async function generateEdition(userId: string): Promise<Edition> {
           else if (sType === "dislike") delta = -0.10;
           else if (sType === "skip") delta = -0.06;
 
-          const topics = topicsMap.get(artId) || [];
           for (const t of topics) {
             topicBoost[t] = (topicBoost[t] || 0) + delta;
           }
@@ -205,15 +359,6 @@ export async function generateEdition(userId: string): Promise<Edition> {
     } else if (signalsData) {
       for (const rawRow of signalsData) {
         const row = rawRow as unknown as SignalJoinedArticle;
-        if (row.type === "skip" || row.type === "dislike") {
-          excludedArticleIds.add(row.article_id);
-        }
-        let delta = 0;
-        if (row.type === "like") delta = 0.08;
-        else if (row.type === "click") delta = 0.03;
-        else if (row.type === "dislike") delta = -0.10;
-        else if (row.type === "skip") delta = -0.06;
-
         let topics: string[] = [];
         if (row.articles) {
           if (Array.isArray(row.articles)) {
@@ -222,6 +367,21 @@ export async function generateEdition(userId: string): Promise<Edition> {
             topics = row.articles.topics;
           }
         }
+
+        userSignalsWithTopics.push({
+          type: row.type,
+          topics,
+          createdAt: row.created_at,
+        });
+
+        if (row.type === "skip" || row.type === "dislike") {
+          excludedArticleIds.add(row.article_id);
+        }
+        let delta = 0;
+        if (row.type === "like") delta = 0.08;
+        else if (row.type === "click") delta = 0.03;
+        else if (row.type === "dislike") delta = -0.10;
+        else if (row.type === "skip") delta = -0.06;
 
         for (const t of topics) {
           topicBoost[t] = (topicBoost[t] || 0) + delta;
@@ -531,7 +691,7 @@ export async function generateEdition(userId: string): Promise<Edition> {
   // Check existing edition for today to preserve editionNumber upon re-generation
   const { data: existingToday } = await supabaseAdmin
     .from("editions")
-    .select("id, layout_json")
+    .select("id, layout_json, created_at")
     .eq("user_id", userId)
     .eq("edition_date", todayDate)
     .maybeSingle();
@@ -548,6 +708,40 @@ export async function generateEdition(userId: string): Promise<Edition> {
     editionNumber = (count ?? 0) + 1;
   }
 
+  // Query previous edition before today (if any) to compute "What changed since yesterday"
+  const { data: prevEditionRow } = await supabaseAdmin
+    .from("editions")
+    .select("id, edition_date, layout_json, created_at")
+    .eq("user_id", userId)
+    .lt("edition_date", todayDate)
+    .order("edition_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const previousEdition =
+    (prevEditionRow?.layout_json as Edition | null) ??
+    (existingToday?.layout_json as Edition | null);
+
+  const referenceTime =
+    prevEditionRow?.created_at || (existingToday as { created_at?: string } | null)?.created_at;
+
+  let filteredSignals = userSignalsWithTopics;
+  if (referenceTime) {
+    const refMs = new Date(referenceTime).getTime() - 1000;
+    const sinceRef = userSignalsWithTopics.filter(
+      (s) => s.createdAt && new Date(s.createdAt).getTime() >= refMs
+    );
+    if (sinceRef.length > 0) {
+      filteredSignals = sinceRef;
+    }
+  }
+
+  const changes = computeChangesSinceYesterday(
+    { lead, sections, inBrief, discovery },
+    previousEdition,
+    filteredSignals
+  );
+
   const finalEdition: Edition = {
     id: existingToday?.id || "",
     date: todayDate,
@@ -559,6 +753,7 @@ export async function generateEdition(userId: string): Promise<Edition> {
     inBrief,
     takeaways,
     discovery,
+    changes: changes.length > 0 ? changes : undefined,
   };
 
   const { data: savedEdition, error: upsertError } = await supabaseAdmin

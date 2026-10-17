@@ -204,6 +204,29 @@ export default async function PrintEdition({ edition }: PrintEditionProps) {
               margin-bottom: 8px;
             }
 
+            .what-changed-box {
+              border-left: 3px solid #8A5A2B;
+              background-color: #F8F4EE;
+              padding: 4px 8px;
+              margin-bottom: 6px;
+              font-family: 'Inter', sans-serif;
+            }
+            .what-changed-title {
+              font-size: 6.5pt;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              color: #8A5A2B;
+              margin-bottom: 2px;
+            }
+            .what-changed-list {
+              margin: 0;
+              padding-left: 12px;
+              font-size: 7.5pt;
+              color: #1B1A17;
+              line-height: 1.3;
+            }
+
             /* Lead Story */
             .lead-story {
               display: flex;
@@ -537,6 +560,16 @@ export default async function PrintEdition({ edition }: PrintEditionProps) {
             {/* Lead Story */}
             <article className="lead-story">
               <div>
+                {edition.changes && edition.changes.length > 0 && (
+                  <div className="what-changed-box">
+                    <div className="what-changed-title">What changed since yesterday</div>
+                    <ul className="what-changed-list">
+                      {edition.changes.slice(0, 3).map((change, idx) => (
+                        <li key={idx}>{change}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="story-meta">
                   <span className="story-meta-source">
                     {edition.lead.source || "News"}

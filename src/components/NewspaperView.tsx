@@ -38,6 +38,28 @@ export default function NewspaperView({
       )}
 
       <div className="space-y-10 mt-6">
+        {/* What changed since yesterday banner */}
+        {edition.changes && edition.changes.length > 0 && (
+          <aside
+            aria-label="What changed since yesterday"
+            className="rounded-sm border-l-4 border-[#8A5A2B] bg-[#FFFDF8] p-4 sm:p-5 shadow-xs"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="font-ui text-xs font-bold uppercase tracking-wider text-[#8A5A2B]">
+                What changed since yesterday
+              </span>
+            </div>
+            <ul className="space-y-1.5 font-ui text-sm text-[#3A3834]">
+              {edition.changes.map((change, idx) => (
+                <li key={idx} className="flex items-baseline gap-2">
+                  <span className="text-[#8A5A2B] font-bold select-none">&bull;</span>
+                  <span>{change}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+
         {/* Lead Story */}
         {edition.lead && (
           <StoryCard

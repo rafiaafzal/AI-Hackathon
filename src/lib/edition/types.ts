@@ -27,4 +27,5 @@ export interface Edition {
   inBrief: EditionItem[];
   takeaways: string[];
   discovery?: EditionItem & { whyNew: string };
+  changes?: string[];
 }
