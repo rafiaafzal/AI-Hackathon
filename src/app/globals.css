@@ -176,3 +176,114 @@
 .cn-steam {
   animation: cn-steam 2s ease-in-out infinite;
 }
+
+/* HCI Animations & Shimmer */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 350ms ease-out both;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f1e9db 25%, #fffdf8 50%, #f1e9db 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite linear;
+}
+
+@keyframes cardStagger {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-card {
+  animation: cardStagger 250ms ease-out both;
+}
+.stagger-card:nth-child(1) { animation-delay: 30ms; }
+.stagger-card:nth-child(2) { animation-delay: 60ms; }
+.stagger-card:nth-child(3) { animation-delay: 90ms; }
+.stagger-card:nth-child(4) { animation-delay: 120ms; }
+.stagger-card:nth-child(5) { animation-delay: 150ms; }
+.stagger-card:nth-child(6) { animation-delay: 180ms; }
+.stagger-card:nth-child(7) { animation-delay: 210ms; }
+.stagger-card:nth-child(8) { animation-delay: 240ms; }
+.stagger-card:nth-child(9) { animation-delay: 270ms; }
+.stagger-card:nth-child(10) { animation-delay: 300ms; }
+
+.story-card-hover {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out, border-left-width 150ms ease-out;
+}
+
+@media (hover: hover) {
+  .story-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px -2px rgba(27, 26, 23, 0.08);
+  }
+}
+
+.btn-press {
+  transition: transform 150ms ease-out;
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+@keyframes likePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+.animate-like-pop {
+  animation: likePop 250ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-collapse-exit {
+  transition: opacity 300ms ease-out, transform 300ms ease-out, max-height 350ms ease-out, margin 300ms ease-out, padding 300ms ease-out !important;
+  opacity: 0 !important;
+  transform: scale(0.98) !important;
+  max-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import SectionLabel from "@/components/SectionLabel";
 import { toOneSentence } from "@/lib/utils";
 import { getTopicStyle } from "@/lib/topic-style";
+import { showToast } from "@/components/Toast";
 
 export interface StoryCardProps {
   articleId: string;
@@ -38,12 +39,14 @@ export default function StoryCard({
   interactive = true,
   layoutStyle,
 }: StoryCardProps) {
-  const [hidden, setHidden] = useState<boolean>(false);
+  const [isCollapsing, setIsCollapsing] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [liked, setLiked] = useState<boolean>(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const readSentRef = useRef<boolean>(false);
   const displaySummary = layoutStyle === "brief" ? toOneSentence(summary) : summary;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const primaryTopic = topics && topics.length > 0 ? topics[0] : "general";
   const primaryStyle = getTopicStyle(primaryTopic);
@@ -115,25 +118,53 @@ export default function StoryCard({
   }, [articleId, interactive]);
 
   const handleLike = () => {
-    setLiked(!liked);
+    const next = !liked;
+    setLiked(next);
     sendSignal("like");
+    if (next) {
+      showToast({
+        message: "Saved. More like this tomorrow",
+        durationMs: 3500,
+      });
+    }
+  };
+
+  const handleSkipOrDislike = (type: "skip" | "dislike") => {
+    setIsCollapsing(true);
+    sendSignal(type);
+
+    collapseTimerRef.current = setTimeout(() => {
+      setIsCollapsed(true);
+    }, 350);
+
+    const topicLabel = primaryStyle.label || "this topic";
+    showToast({
+      message: `Got it, fewer ${topicLabel.toLowerCase()} stories next time`,
+      actionLabel: "Undo",
+      durationMs: 5000,
+      onAction: () => {
+        if (collapseTimerRef.current) {
+          clearTimeout(collapseTimerRef.current);
+        }
+        setIsCollapsing(false);
+        setIsCollapsed(false);
+      },
+    });
   };
 
   const handleDislike = () => {
-    setHidden(true);
-    sendSignal("dislike");
+    handleSkipOrDislike("dislike");
   };
 
   const handleSkip = () => {
-    setHidden(true);
-    sendSignal("skip");
+    handleSkipOrDislike("skip");
   };
 
   const handleOriginalClick = () => {
     sendSignal("click");
   };
 
-  if (hidden) {
+  if (isCollapsed) {
     return null;
   }
 
@@ -144,13 +175,13 @@ export default function StoryCard({
         onClick={handleLike}
         aria-label={liked ? "Liked this story" : "Like this story"}
         title={liked ? "Liked" : "Like this story"}
-        className={`min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded px-3 py-2 text-xs transition border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C1C] focus-visible:ring-offset-1 ${
+        className={`btn-press min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded px-3 py-2 text-xs transition border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C1C] focus-visible:ring-offset-1 ${
           liked
             ? "border-emerald-600 bg-emerald-100 text-emerald-900 font-semibold shadow-xs"
             : "border-[#D9CFBF] bg-[#FFFDF8] text-[#6B655C] hover:border-[#9B1C1C] hover:text-[#9B1C1C]"
         }`}
       >
-        <span aria-hidden="true" className="mr-1.5 text-sm">{liked ? "👍" : "👍"}</span>
+        <span aria-hidden="true" className={`mr-1.5 text-sm ${liked ? "animate-like-pop" : ""}`}>👍</span>
         <span className="text-[11px] font-ui">{liked ? "Liked" : "Like"}</span>
       </button>
 
@@ -159,7 +190,7 @@ export default function StoryCard({
         onClick={handleDislike}
         aria-label="Dislike this story"
         title="Not for me"
-        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-2 text-xs text-[#6B655C] hover:border-red-600 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C1C] focus-visible:ring-offset-1 transition"
+        className="btn-press min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-2 text-xs text-[#6B655C] hover:border-red-600 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C1C] focus-visible:ring-offset-1 transition"
       >
         <span aria-hidden="true" className="mr-1.5 text-sm">👎</span>
         <span className="text-[11px] font-ui">Not for me</span>
@@ -170,7 +201,7 @@ export default function StoryCard({
         onClick={handleSkip}
         aria-label="Skip this story"
         title="Skip this story"
-        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-2 text-xs text-[#6B655C] hover:border-[#9B1C1C] hover:text-[#9B1C1C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C1C] focus-visible:ring-offset-1 transition"
+        className="btn-press min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded border border-[#D9CFBF] bg-[#FFFDF8] px-3 py-2 text-xs text-[#6B655C] hover:border-[#9B1C1C] hover:text-[#9B1C1C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C1C] focus-visible:ring-offset-1 transition"
       >
         <span aria-hidden="true" className="mr-1.5 text-sm">✕</span>
         <span className="text-[11px] font-ui">Skip</span>
@@ -185,8 +216,8 @@ export default function StoryCard({
         ref={cardRef}
         style={{ borderLeft: "6px solid #9B1C1C" }}
         className={`rounded-r-sm border-y border-r border-[#D9CFBF] p-6 sm:p-8 space-y-5 transition-all duration-200 ${
-          liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#FFFDF8]"
-        }`}
+          isCollapsing ? "card-collapse-exit" : "story-card-hover"
+        } ${liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#FFFDF8]"}`}
         aria-labelledby={`lead-heading-${articleId}`}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -290,8 +321,8 @@ export default function StoryCard({
         ref={cardRef}
         style={{ borderLeft: `4px solid ${primaryStyle.color}` }}
         className={`rounded-r-sm border-y border-r border-[#D9CFBF]/60 p-3.5 flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 transition-all duration-200 ${
-          liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#FFFDF8]"
-        }`}
+          isCollapsing ? "card-collapse-exit" : "story-card-hover"
+        } ${liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#FFFDF8]"}`}
       >
         <div className="space-y-1.5 flex-1">
           <div className="flex items-center gap-2 text-xs font-ui text-[#6B655C]">
@@ -353,8 +384,8 @@ export default function StoryCard({
         ref={cardRef}
         style={{ borderLeft: "4px solid #3B6E8F" }}
         className={`rounded-r-sm border-y border-r border-[#3B6E8F]/40 p-6 sm:p-8 space-y-4 transition-all duration-200 ${
-          liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#3B6E8F]/5"
-        }`}
+          isCollapsing ? "card-collapse-exit" : "story-card-hover"
+        } ${liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#3B6E8F]/5"}`}
         aria-label="Rabbit hole of the day"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -443,8 +474,8 @@ export default function StoryCard({
       ref={cardRef}
       style={{ borderLeft: `4px solid ${primaryStyle.color}` }}
       className={`rounded-r-sm border-y border-r border-[#D9CFBF] p-5 space-y-3.5 flex flex-col justify-between transition-all duration-200 ${
-        liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#FFFDF8]"
-      }`}
+        isCollapsing ? "card-collapse-exit" : "story-card-hover"
+      } ${liked ? "bg-emerald-50/40 border-emerald-500/40" : "bg-[#FFFDF8]"}`}
       aria-label={title}
     >
       <div className="space-y-2.5">

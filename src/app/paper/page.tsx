@@ -6,6 +6,7 @@ import { generateEdition } from "@/lib/edition/generate";
 import { Edition } from "@/lib/edition/types";
 import { UserProfile } from "@/lib/profile";
 import NewspaperView from "@/components/NewspaperView";
+import EditionSkeleton from "@/components/edition/EditionSkeleton";
 
 export const instant = false;
 
@@ -57,22 +58,7 @@ async function PaperContent() {
 export default function PaperPage() {
   return (
     <main className="min-h-screen bg-[var(--cn-bg,#FAF5EC)]">
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-4 text-center">
-            <h2 className="font-headline text-3xl sm:text-4xl font-bold text-[#1B1A17]">
-              Chai &amp; News
-            </h2>
-            <div className="w-12 h-0.5 bg-[#9B1C1C] my-2" />
-            <p className="font-headline italic text-lg sm:text-xl text-[#8A5A2B] animate-pulse">
-              Brewing your morning paper fresh...
-            </p>
-            <p className="font-ui text-xs text-[#6B655C] max-w-sm">
-              Our AI editor is curating your personalized stories, ranking your topics, and assembling your daily sections.
-            </p>
-          </div>
-        }
-      >
+      <Suspense fallback={<EditionSkeleton />}>
         <PaperContent />
       </Suspense>
     </main>

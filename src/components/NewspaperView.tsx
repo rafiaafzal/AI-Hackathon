@@ -158,7 +158,7 @@ export default function NewspaperView({
   );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-8 py-6">
+    <div className="mx-auto max-w-5xl px-4 sm:px-8 py-6 animate-fade-up">
       {/* Navigation Top Bar */}
       <PaperTopBar editionId={edition.id} />
 
@@ -240,21 +240,22 @@ export default function NewspaperView({
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {section.items.map((item) => (
-                <StoryCard
-                  key={item.articleId}
-                  variant="section"
-                  articleId={item.articleId}
-                  url={item.url}
-                  title={item.title}
-                  source={item.source}
-                  publishedAt={item.publishedAt}
-                  summary={item.summary}
-                  topics={item.topics}
-                  reason={item.reason}
-                  readMinutes={item.readMinutes}
-                  interactive={interactive}
-                  layoutStyle={filteredEdition.layoutStyle}
-                />
+                <div key={item.articleId} className="stagger-card">
+                  <StoryCard
+                    variant="section"
+                    articleId={item.articleId}
+                    url={item.url}
+                    title={item.title}
+                    source={item.source}
+                    publishedAt={item.publishedAt}
+                    summary={item.summary}
+                    topics={item.topics}
+                    reason={item.reason}
+                    readMinutes={item.readMinutes}
+                    interactive={interactive}
+                    layoutStyle={filteredEdition.layoutStyle}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -271,21 +272,22 @@ export default function NewspaperView({
             </div>
             <div className="divide-y divide-[#D9CFBF]/60">
               {filteredEdition.inBrief.map((item) => (
-                <StoryCard
-                  key={item.articleId}
-                  variant="inBrief"
-                  articleId={item.articleId}
-                  url={item.url}
-                  title={item.title}
-                  source={item.source}
-                  publishedAt={item.publishedAt}
-                  summary={item.summary}
-                  topics={item.topics}
-                  reason={item.reason}
-                  readMinutes={item.readMinutes}
-                  interactive={interactive}
-                  layoutStyle={filteredEdition.layoutStyle}
-                />
+                <div key={item.articleId} className="stagger-card">
+                  <StoryCard
+                    variant="inBrief"
+                    articleId={item.articleId}
+                    url={item.url}
+                    title={item.title}
+                    source={item.source}
+                    publishedAt={item.publishedAt}
+                    summary={item.summary}
+                    topics={item.topics}
+                    reason={item.reason}
+                    readMinutes={item.readMinutes}
+                    interactive={interactive}
+                    layoutStyle={filteredEdition.layoutStyle}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -293,20 +295,25 @@ export default function NewspaperView({
 
         {/* Empty budget limit state if sections and inBrief are filtered out */}
         {filteredEdition.sections.length === 0 && filteredEdition.inBrief.length === 0 && (
-          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-6 text-center space-y-2 my-6">
-            <p className="font-headline text-lg text-[#1B1A17] font-semibold">
+          <div className="rounded-sm border border-[#D9CFBF] bg-[#FFFDF8] p-8 text-center space-y-3 my-8 shadow-xs">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FAF5EC] border border-[#D9CFBF] text-[#8A5A2B] text-xl">
+              ⏱️
+            </div>
+            <h4 className="font-headline text-xl text-[#1B1A17] font-bold">
               You&apos;ve reached your {budget} minute reading limit
+            </h4>
+            <p className="font-ui text-sm text-[#6B655C] max-w-md mx-auto">
+              Want to dive into more stories? Expand your time budget above to uncover the rest of today&apos;s curated sections.
             </p>
-            <p className="font-ui text-xs text-[#6B655C]">
-              Want more stories? Select a longer time budget above to uncover the rest of today&apos;s paper.
-            </p>
-            <button
-              type="button"
-              onClick={() => handleBudgetChange("full")}
-              className="mt-2 inline-flex items-center justify-center rounded-sm border border-[#9B1C1C] px-3.5 py-1.5 font-ui text-xs font-semibold text-[#9B1C1C] hover:bg-[#9B1C1C] hover:text-white transition"
-            >
-              Show Full Paper
-            </button>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => handleBudgetChange("full")}
+                className="btn-press min-h-[44px] inline-flex items-center justify-center rounded bg-[#9B1C1C] px-5 py-2 font-ui text-xs font-semibold uppercase tracking-wider text-white hover:bg-[#801616] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C1C] focus-visible:ring-offset-2 transition"
+              >
+                Show Full Paper &rarr;
+              </button>
+            </div>
           </div>
         )}
 

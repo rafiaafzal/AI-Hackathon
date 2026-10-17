@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { Edition } from "@/lib/edition/types";
 import { UserProfile } from "@/lib/profile";
 import NewspaperView from "@/components/NewspaperView";
+import EditionSkeleton from "@/components/edition/EditionSkeleton";
 
 export const instant = false;
 
@@ -53,13 +54,7 @@ async function ArchivedPaperContent({ params }: ArchivedPaperPageProps) {
 export default function ArchivedPaperPage(props: ArchivedPaperPageProps) {
   return (
     <main className="min-h-screen bg-[var(--cn-bg,#FAF5EC)]">
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center font-headline text-xl text-[#8A5A2B]">
-            Retrieving archived edition...
-          </div>
-        }
-      >
+      <Suspense fallback={<EditionSkeleton />}>
         <ArchivedPaperContent params={props.params} />
       </Suspense>
     </main>

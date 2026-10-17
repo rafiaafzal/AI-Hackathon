@@ -229,20 +229,28 @@ export default function OnboardingWizard() {
               </div>
             </div>
 
-            <div className="pt-4 flex items-center justify-between">
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
               <Link
                 href="/signin"
                 className="font-ui text-xs text-[#8A5A2B] hover:text-[#9B1C1C] hover:underline"
               >
                 Already have a paper? Sign in
               </Link>
-              <Button
-                disabled={name.trim().length === 0 || !email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())}
-                onClick={() => setStep(2)}
-                className="bg-[#9B1C1C] text-white hover:bg-[#801616] px-6 h-11"
-              >
-                Continue &rarr;
-              </Button>
+              <div className="flex flex-col items-end gap-1 w-full sm:w-auto">
+                <Button
+                  disabled={name.trim().length === 0 || !email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())}
+                  onClick={() => setStep(2)}
+                  className="bg-[#9B1C1C] text-white hover:bg-[#801616] px-6 h-11 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto btn-press"
+                >
+                  Continue &rarr;
+                </Button>
+                {name.trim().length === 0 && (
+                  <span className="font-ui text-[11px] text-[#8A5A2B]">Please enter your name</span>
+                )}
+                {name.trim().length > 0 && (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) && (
+                  <span className="font-ui text-[11px] text-[#8A5A2B]">Please enter a valid email</span>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -277,7 +285,7 @@ export default function OnboardingWizard() {
                     key={topic}
                     type="button"
                     onClick={() => toggleTopic(topic)}
-                    className={`flex items-center gap-2.5 rounded-sm p-3 text-left transition-all border ${
+                    className={`btn-press flex items-center gap-2.5 rounded-sm p-3 text-left transition-all border ${
                       isSelected
                         ? "border-[#9B1C1C] bg-[#FAF0E6] text-[#9B1C1C] font-semibold ring-1 ring-[#9B1C1C]"
                         : "border-[#D9CFBF] bg-[#FAF5EC] text-[#1B1A17] hover:border-[#8A5A2B]"
@@ -294,17 +302,24 @@ export default function OnboardingWizard() {
               <Button
                 variant="outline"
                 onClick={() => setStep(1)}
-                className="border-[#D9CFBF] text-[#6B655C] hover:bg-[#FAF5EC]"
+                className="btn-press border-[#D9CFBF] text-[#6B655C] hover:bg-[#FAF5EC]"
               >
                 &larr; Back
               </Button>
-              <Button
-                disabled={selectedTopics.length < 3}
-                onClick={() => setStep(3)}
-                className="bg-[#9B1C1C] text-white hover:bg-[#801616] px-6 h-11"
-              >
-                Continue &rarr;
-              </Button>
+              <div className="flex flex-col items-end gap-1">
+                <Button
+                  disabled={selectedTopics.length < 3}
+                  onClick={() => setStep(3)}
+                  className="btn-press bg-[#9B1C1C] text-white hover:bg-[#801616] px-6 h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Continue &rarr;
+                </Button>
+                {selectedTopics.length < 3 && (
+                  <span className="font-ui text-[11px] text-[#8A5A2B]">
+                    Pick at least {3 - selectedTopics.length} more {3 - selectedTopics.length === 1 ? "topic" : "topics"}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}

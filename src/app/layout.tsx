@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Source_Serif_4, Inter } from "next/font/google";
 import SiteNav from "@/components/SiteNav";
+import ToastContainer from "@/components/Toast";
 import "./globals.css";
 
 const headline = Playfair_Display({ subsets: ["latin"], variable: "--font-headline" });
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SiteNav />
         {children}
+        <ToastContainer />
       </body>
     </html>
   );
