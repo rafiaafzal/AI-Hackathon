@@ -249,9 +249,9 @@ function getAverageTopicDepth(profile: UserProfile | null): number {
       return Math.max(0, Math.min(1, avg));
     }
   }
-  if (typeof (profile as { depth?: unknown }).depth === "number") {
-    const d = (profile as { depth: number }).depth;
-    if (!isNaN(d)) return Math.max(0, Math.min(1, d));
+  const fallbackDepth = (profile as unknown as { depth?: unknown }).depth;
+  if (typeof fallbackDepth === "number" && !isNaN(fallbackDepth)) {
+    return Math.max(0, Math.min(1, fallbackDepth));
   }
   return 0.5;
 }
